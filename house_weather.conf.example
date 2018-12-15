@@ -1,0 +1,4 @@
+{
+  perldoc => 1,
+  secrets => ['some_value']
+}
