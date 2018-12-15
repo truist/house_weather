@@ -1,0 +1,7 @@
+% layout 'default';
+% title 'Welcome';
+<h2><%= $msg %></h2>
+<p>
+	Hello from the edited page!
+	<%= link_to 'Click here' => url_for %> to reload the page.
+</p>
