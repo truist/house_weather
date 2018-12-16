@@ -1,3 +1,8 @@
 {
 	secrets => ['some_value']
+	database => {
+		dsn => 'DBI:SQLite:dbname=/some/path/to/weather.db',
+		username => undef,
+		password => undef,
+	},
 }
