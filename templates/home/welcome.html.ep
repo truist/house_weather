@@ -1,7 +1,56 @@
-% layout 'default';
-% title 'Welcome';
-<h2><%= $msg %></h2>
-<p>
-	Hello from the edited page!
-	<%= link_to 'Click here' => url_for %> to reload the page.
-</p>
+% layout 'chart';
+% title 'House Weather';
+
+<script type="text/javascript">
+	google.charts.load('current', {packages: ['corechart']});
+	google.charts.setOnLoadCallback(drawChart);
+
+	function drawChart() {
+		var tempData = new google.visualization.DataTable();
+		tempData.addColumn('datetime', 'Date');
+		tempData.addColumn('number', 'Basement');
+		tempData.addColumn('number', 'Attic');
+		tempData.addRows([
+			[new Date('2018-12-16T02:50:59'), 18, 23],
+			[new Date('2018-12-16T03:15:31'), 19, 25],
+			[new Date('2018-12-16T03:50:00'), null, 27],
+			[new Date('2018-12-16T04:22:11'), 18, null],
+			[new Date('2018-12-16T05:01:59'), 17, 21],
+			[new Date('2018-12-16T05:09:12'), 18, 22],
+		]);
+
+		var options = {
+			interpolateNulls: true,
+			/* curveType: 'function', */
+			legend: {
+				position: 'top',
+				alignment: 'center',
+			},
+		};
+		options.title = 'Temperature';
+
+		new google.visualization.LineChart(document.getElementById('temp_chart')).draw(tempData, options);
+
+		var humidityData = new google.visualization.DataTable();
+		humidityData.addColumn('datetime', 'Date');
+		humidityData.addColumn('number', 'Basement');
+		humidityData.addColumn('number', 'Attic');
+		humidityData.addRows([
+			[new Date('2018-12-16T02:50:59'), 55, 70],
+			[new Date('2018-12-16T03:15:31'), 52, 65],
+			[new Date('2018-12-16T03:50:00'), null, 40],
+			[new Date('2018-12-16T04:22:11'), 58, null],
+			[new Date('2018-12-16T05:01:59'), 55, 55],
+			[new Date('2018-12-16T05:09:12'), 57, 53],
+		]);
+
+		options.title = 'Humidity';
+		new google.visualization.LineChart(document.getElementById('humidity_chart')).draw(humidityData, options);
+	};
+</script>
+
+<div id="temp_chart"></div>
+<div id="humidity_chart"></div>
+<pre>
+%= $all_data
+</pre>

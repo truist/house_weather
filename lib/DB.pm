@@ -56,4 +56,14 @@ sub add_record {
 	$self->{dbh}->do($statement, undef, $source, $temp, $humidity);
 }
 
+sub all_data {
+	my ($self) = @_;
+
+	my $statement = qq|
+		SELECT $DATE_COL, $SOURCE_COL, $TEMP_COL, $HUMIDITY_COL
+		FROM $TABLE_NAME
+	|;
+	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
+}
+
 1;

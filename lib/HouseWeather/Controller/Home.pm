@@ -1,10 +1,17 @@
 package HouseWeather::Controller::Home;
+
 use Mojo::Base 'Mojolicious::Controller';
+
+use Mojo::JSON qw(encode_json);
 
 sub welcome {
 	my ($self) = @_;
 
-	$self->render(msg => 'Welcome to the Mojolicious real-time web framework!');
+	my $data = $self->db->all_data();
+
+	$self->stash(all_data => encode_json($data));
+
+	$self->render();
 }
 
 sub submit {
