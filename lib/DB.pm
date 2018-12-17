@@ -60,7 +60,9 @@ sub all_data {
 	my ($self) = @_;
 
 	my $statement = qq|
-		SELECT $DATE_COL, $SOURCE_COL, $TEMP_COL, $HUMIDITY_COL
+		SELECT
+			strftime('%Y-%m-%dT%H:%M:%S', $DATE_COL) as $DATE_COL,
+			$SOURCE_COL, $TEMP_COL, $HUMIDITY_COL
 		FROM $TABLE_NAME
 	|;
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });

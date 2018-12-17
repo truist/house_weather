@@ -15,6 +15,7 @@ sub startup {
 	my $router = $self->routes;
 	$router->get('/')->to('home#welcome');
 	$router->any(['GET', 'POST'] => '/submit')->to('home#submit');
+	$router->get('/query')->to('home#query');
 }
 
 1;

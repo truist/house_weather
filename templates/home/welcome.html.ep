@@ -3,46 +3,61 @@
 
 <script type="text/javascript">
 	google.charts.load('current', {packages: ['corechart']});
-	google.charts.setOnLoadCallback(drawChart);
+	google.charts.setOnLoadCallback(chartsReady);
 
-	function drawChart() {
+	function chartsReady() {
+    fetch('http://weather.rainskit.com/query')
+      .then(response => response.json())
+      .then(data => drawCharts(data))
+      .catch(error => console.error(error));
+  }
+
+  function drawCharts(data) {
 		var tempData = new google.visualization.DataTable();
 		tempData.addColumn('datetime', 'Date');
-		tempData.addColumn('number', 'Basement');
-		tempData.addColumn('number', 'Attic');
-		tempData.addRows([
-			[new Date('2018-12-16T02:50:59'), 18, 23],
-			[new Date('2018-12-16T03:15:31'), 19, 25],
-			[new Date('2018-12-16T03:50:00'), null, 27],
-			[new Date('2018-12-16T04:22:11'), 18, null],
-			[new Date('2018-12-16T05:01:59'), 17, 21],
-			[new Date('2018-12-16T05:09:12'), 18, 22],
-		]);
+
+		var humidityData = new google.visualization.DataTable();
+		humidityData.addColumn('datetime', 'Date');
+
+    var knownSources = {};
+    data.forEach(record => {
+      if (!knownSources[record.source]) {
+        tempData.addColumn('number', record.source);
+        humidityData.addColumn('number', record.source);
+
+        knownSources[record.source] = tempData.getNumberOfColumns() - 1;
+      }
+
+      var tempRow = [];
+      var humidityRow = [];
+      for (var i = 0; i < tempData.getNumberOfColumns(); i++) {
+        if (i == 0) {
+          var date = new Date(record.datetime);
+          tempRow.push(date);
+          humidityRow.push(date);
+        } else if (i == knownSources[record.source]) {
+          tempRow.push(record.temp);
+          humidityRow.push(record.humidity);
+        } else {
+          tempRow.push(null);
+          humidityRow.push(null);
+        }
+      }
+      tempData.addRow(tempRow);
+      humidityData.addRow(humidityRow);
+    });
 
 		var options = {
 			interpolateNulls: true,
-			/* curveType: 'function', */
+			// curveType: 'function',
 			legend: {
 				position: 'top',
 				alignment: 'center',
 			},
 		};
+
 		options.title = 'Temperature';
-
 		new google.visualization.LineChart(document.getElementById('temp_chart')).draw(tempData, options);
-
-		var humidityData = new google.visualization.DataTable();
-		humidityData.addColumn('datetime', 'Date');
-		humidityData.addColumn('number', 'Basement');
-		humidityData.addColumn('number', 'Attic');
-		humidityData.addRows([
-			[new Date('2018-12-16T02:50:59'), 55, 70],
-			[new Date('2018-12-16T03:15:31'), 52, 65],
-			[new Date('2018-12-16T03:50:00'), null, 40],
-			[new Date('2018-12-16T04:22:11'), 58, null],
-			[new Date('2018-12-16T05:01:59'), 55, 55],
-			[new Date('2018-12-16T05:09:12'), 57, 53],
-		]);
 
 		options.title = 'Humidity';
 		new google.visualization.LineChart(document.getElementById('humidity_chart')).draw(humidityData, options);
@@ -51,6 +66,4 @@
 
 <div id="temp_chart"></div>
 <div id="humidity_chart"></div>
-<pre>
-%= $all_data
-</pre>
+
