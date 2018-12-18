@@ -7,8 +7,6 @@ use Mojo::JSON qw(encode_json);
 sub welcome {
 	my ($self) = @_;
 
-	my $data = $self->db->all_data();
-
 	$self->render();
 }
 

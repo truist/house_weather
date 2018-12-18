@@ -24,6 +24,7 @@
       if (record.temp == 'nan' || record.humidity == 'nan') {
         return;
       }
+
       if (!knownSources[record.source]) {
         tempData.addColumn('number', record.source);
         humidityData.addColumn('number', record.source);
@@ -52,10 +53,10 @@
 
 		var options = {
 			interpolateNulls: true,
-			legend: {
-				position: 'top',
-				alignment: 'center',
-			},
+			// legend: {
+			// 	position: 'top',
+			// 	alignment: 'center',
+			// },
 		};
 
 		options.title = 'Temperature';
