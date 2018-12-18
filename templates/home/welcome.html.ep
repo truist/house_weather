@@ -21,6 +21,9 @@
 
     var knownSources = {};
     data.forEach(record => {
+      if (record.temp == 'nan' || record.humidity == 'nan') {
+        return;
+      }
       if (!knownSources[record.source]) {
         tempData.addColumn('number', record.source);
         humidityData.addColumn('number', record.source);
@@ -49,7 +52,6 @@
 
 		var options = {
 			interpolateNulls: true,
-			// curveType: 'function',
 			legend: {
 				position: 'top',
 				alignment: 'center',

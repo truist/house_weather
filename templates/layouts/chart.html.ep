@@ -3,6 +3,7 @@
 	<head>
 		<title><%= title %></title>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<meta http-equiv="refresh" content="60"> 
 	</head>
 	<body>
 		<%= content %>
