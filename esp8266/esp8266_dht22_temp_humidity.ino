@@ -7,13 +7,13 @@ DHT dht(DHTPIN, DHTTYPE, 15);
 
 #include <ESP8266WiFi.h>
 // don't leave real values here, after the first run
-#define WLAN_SSID "SOME_SSID"
-#define WLAN_PASS "SOME_PASS"
+#define WLAN_SSID "FAKE_SSID"
+#define WLAN_PASS "FAKE_PASS"
 
 #include <ESP8266HTTPClient.h>
 HTTPClient http;
 
-#define REPORT_INTERVAL 10000
+#define REPORT_INTERVAL 180000
 
 void setup() {
   dht.begin();
