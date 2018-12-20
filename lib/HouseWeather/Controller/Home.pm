@@ -3,6 +3,8 @@ package HouseWeather::Controller::Home;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Mojo::JSON qw(encode_json);
+use Mojo::UserAgent;
+use Mojo::URL;
 
 sub welcome {
 	my ($self) = @_;
@@ -20,6 +22,28 @@ sub submit {
 	$self->db->add_record($source, $temp, $humidity);
 
 	$self->render(text => 'OK');
+}
+
+sub log_outside_weather {
+	my ($self) = @_;
+
+	my $zip = $self->_get_required_param('zip');
+
+	my $url = Mojo::URL->new('https://api.openweathermap.org/data/2.5/weather');
+	$url->query({zip => "$zip,us", appid => $self->config->{openweathermap_api_key}});
+
+	my $result = Mojo::UserAgent->new()->get($url)->result();
+	if ($result->is_success) {
+		my $data = $result->json->{main};
+
+		my $temp = sprintf("%.1f", $data->{temp} - 273.15);
+		my $humidity = $data->{humidity};
+		$self->db->add_record($zip, $temp, $humidity);
+
+		$self->render(text => "Temp: $temp; humidity: $humidity");
+	} else {
+		$self->render(text => $result->message);
+	}
 }
 
 sub query {

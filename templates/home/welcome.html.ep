@@ -2,10 +2,10 @@
 % title 'House Weather';
 
 <script type="text/javascript">
-	google.charts.load('current', {packages: ['corechart']});
-	google.charts.setOnLoadCallback(chartsReady);
+  google.charts.load('current', {packages: ['corechart']});
+  google.charts.setOnLoadCallback(chartsReady);
 
-	function chartsReady() {
+  function chartsReady() {
     fetch('http://weather.rainskit.com/query')
       .then(response => response.json())
       .then(data => drawCharts(data))
@@ -13,11 +13,11 @@
   }
 
   function drawCharts(data) {
-		var tempData = new google.visualization.DataTable();
-		tempData.addColumn('datetime', 'Date');
+    var tempData = new google.visualization.DataTable();
+    tempData.addColumn('datetime', 'Date');
 
-		var humidityData = new google.visualization.DataTable();
-		humidityData.addColumn('datetime', 'Date');
+    var humidityData = new google.visualization.DataTable();
+    humidityData.addColumn('datetime', 'Date');
 
     var knownSources = {};
     data.forEach(record => {
@@ -51,20 +51,21 @@
       humidityData.addRow(humidityRow);
     });
 
-		var options = {
-			interpolateNulls: true,
-			// legend: {
-			// 	position: 'top',
-			// 	alignment: 'center',
-			// },
-		};
+    var options = {
+      interpolateNulls: true,
+      legend: {
+        position: 'top',
+        alignment: 'center',
+      },
+      height: 350,
+    };
 
-		options.title = 'Temperature';
-		new google.visualization.LineChart(document.getElementById('temp_chart')).draw(tempData, options);
+    options.title = 'Temperature';
+    new google.visualization.LineChart(document.getElementById('temp_chart')).draw(tempData, options);
 
-		options.title = 'Humidity';
-		new google.visualization.LineChart(document.getElementById('humidity_chart')).draw(humidityData, options);
-	};
+    options.title = 'Humidity';
+    new google.visualization.LineChart(document.getElementById('humidity_chart')).draw(humidityData, options);
+  };
 </script>
 
 <div id="temp_chart"></div>

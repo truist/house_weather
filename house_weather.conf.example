@@ -1,4 +1,5 @@
 {
 	secrets => ['some_value']
 	db_file => '/some/path/to/weather.db',
+	openweathermap_api_key => 'some_key',
 }
