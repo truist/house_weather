@@ -19,7 +19,7 @@ sub submit {
 	my $temp = $self->_get_required_param('temperature');
 	my $humidity = $self->_get_required_param('humidity');
 
-	$self->db->add_record($source, $temp, $humidity);
+	$self->_add_record_if_valid($source, $temp, $humidity);
 
 	$self->render(text => 'OK');
 }
@@ -38,7 +38,8 @@ sub log_outside_weather {
 
 		my $temp = sprintf("%.1f", $data->{temp} - 273.15);
 		my $humidity = $data->{humidity};
-		$self->db->add_record($zip, $temp, $humidity);
+
+		$self->_add_record_if_valid($zip, $temp, $humidity);
 
 		$self->render(text => "Temp: $temp; humidity: $humidity");
 	} else {
@@ -50,6 +51,15 @@ sub query {
 	my ($self) = @_;
 
 	$self->render(json => $self->db->all_data());
+}
+
+sub _add_record_if_valid {
+	my ($self, $source, $temp, $humidity) = @_;
+
+	say("source: $source; temp: $temp; humidity: $humidity");
+	if ($temp > -30 && $temp < 50 && $humidity >= 0 && $humidity <= 100) {
+		$self->db->add_record($source, $temp, $humidity);
+	}
 }
 
 sub _get_required_param {
