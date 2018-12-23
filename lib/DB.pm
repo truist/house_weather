@@ -95,7 +95,6 @@ sub query {
 	$statement .= qq|
 		where $DATE_COL >= datetime('$start')
 	| if $start;
-	say($statement);
 
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
 }
