@@ -15,8 +15,10 @@ sub welcome {
 	my $last = $self->param('last');
 	if ($last) {
 		my ($length, $units) = $last =~ /(\d+)(minutes?|hours?|days?|weeks?|months?|years?)/;
-		$units .= 's' unless $units =~ /s$/;
-		$self->stash('start' => DateTime->now()->subtract(DateTime::Duration->new($units => $length)));
+		if ($units) {
+			$units .= 's' unless $units =~ /s$/;
+			$self->stash('start' => DateTime->now()->subtract(DateTime::Duration->new($units => $length)));
+		}
 	}
 
 	$self->render();
