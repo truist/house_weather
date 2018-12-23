@@ -73,6 +73,17 @@
   };
 </script>
 
+<div id="last_picker">
+  <ul>
+    <li>Show only the last:</li>
+    <li><%= link_to '1 month' => url_for()->query(last => "1month") %></li>
+    <li><%= link_to '1 week' => url_for()->query(last => "1week") %></li>
+    <li><%= link_to '48 hours' => url_for()->query(last => "2days") %></li>
+    <li><%= link_to '24 hours' => url_for()->query(last => "1day") %></li>
+    <li><%= link_to '12 hours' => url_for()->query(last => "12hours") %></li>
+    <li><%= link_to '2 hours' => url_for()->query(last => "2hours") %></li>
+  </ul>
+</div>
 <div id="temp_chart"></div>
 <div id="humidity_chart"></div>
 
