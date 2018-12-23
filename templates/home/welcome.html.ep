@@ -6,7 +6,12 @@
   google.charts.setOnLoadCallback(chartsReady);
 
   function chartsReady() {
-    fetch('http://weather.rainskit.com/query')
+    console.log('<%= $start %>');
+    var params = '';
+    % if ($start) {
+      params = '?start=<%= $start %>';
+    % }
+    fetch('http://weather.rainskit.com/query' + params)
       .then(response => response.json())
       .then(data => drawCharts(data))
       .catch(error => console.error(error));

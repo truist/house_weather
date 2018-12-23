@@ -71,8 +71,8 @@ sub add_record {
 	$self->{dbh}->do($statement, undef, $source, $temp, $humidity);
 }
 
-sub all_data {
-	my ($self) = @_;
+sub query {
+	my ($self, $start) = @_;
 
 	my $statement = qq|
 		select
@@ -92,6 +92,11 @@ sub all_data {
 		from $DATA_TABLE
 			left join $METADATA_TABLE on $DATA_TABLE.$SOURCE_COL = $METADATA_TABLE.$SOURCE_COL
 	|;
+	$statement .= qq|
+		where $DATE_COL >= datetime('$start')
+	| if $start;
+	say($statement);
+
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
 }
 

@@ -6,8 +6,18 @@ use Mojo::JSON qw(encode_json);
 use Mojo::UserAgent;
 use Mojo::URL;
 
+use DateTime;
+use DateTime::Duration;
+
 sub welcome {
 	my ($self) = @_;
+
+	my $last = $self->param('last');
+	if ($last) {
+		my ($length, $units) = $last =~ /(\d+)(minutes?|hours?|days?|weeks?|months?|years?)/;
+		$units .= 's' unless $units =~ /s$/;
+		$self->stash('start' => DateTime->now()->subtract(DateTime::Duration->new($units => $length)));
+	}
 
 	$self->render();
 }
@@ -50,7 +60,7 @@ sub log_outside_weather {
 sub query {
 	my ($self) = @_;
 
-	$self->render(json => $self->db->all_data());
+	$self->render(json => $self->db->query($self->param('start')));
 }
 
 sub _add_record_if_valid {
