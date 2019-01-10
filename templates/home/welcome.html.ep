@@ -6,9 +6,9 @@
   google.charts.setOnLoadCallback(chartsReady);
 
   function chartsReady() {
-    console.log('<%= $start %>');
     var params = '';
     % if ($start) {
+      console.log('<%= $start %>');
       params = '?start=<%= $start %>';
     % }
     fetch('http://weather.rainskit.com/query' + params)
