@@ -12,6 +12,7 @@ use DateTime::Duration;
 sub welcome {
 	my ($self) = @_;
 
+	$self->stash('start' => undef);
 	my $last = $self->param('last');
 	if ($last) {
 		my ($length, $units) = $last =~ /(\d+)(minutes?|hours?|days?|weeks?|months?|years?)/;
@@ -62,7 +63,9 @@ sub log_outside_weather {
 sub query {
 	my ($self) = @_;
 
-	$self->render(json => $self->db->query($self->param('start')));
+	my $results = $self->db->query($self->param('start'));
+	say("DB query results: " . scalar(@$results));
+	$self->render(json => $results);
 }
 
 sub _add_record_if_valid {

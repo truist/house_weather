@@ -10,8 +10,10 @@
     % if ($start) {
       console.log('<%= $start %>');
       params = '?start=<%= $start %>';
+    % } else {
+      console.log('no $start param');
     % }
-    fetch('http://weather.rainskit.com/query' + params)
+    fetch('http://weather.rainskit.com/query' + params, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => drawCharts(data))
       .catch(error => console.error(error));

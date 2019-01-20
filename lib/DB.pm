@@ -20,6 +20,13 @@ my $FRIENDLY_NAME_COL = 'friendly_name';
 my $TEMP_OFFSET_COL = 'temp_offset';
 my $HUMIDITY_OFFSET_COL = 'humidity_offset';
 
+my $SECONDS_COL = 'seconds';
+my $ADJUSTED_COL = 'adjusted';
+
+my $CHUNK_TARGET = 2500;
+my $MINDATE_COL = 'mindate';
+my $MAXDATE_COL = 'maxdate';
+
 sub init {
 	my ($package, $config) = @_;
 
@@ -74,9 +81,14 @@ sub add_record {
 sub query {
 	my ($self, $start) = @_;
 
+	my $additional_where = '';
+	$additional_where = qq|
+			and $DATE_COL >= datetime('$start')
+	| if $start;
+
 	my $statement = qq|
 		select
-			strftime('%Y-%m-%dT%H:%M:%S', $DATE_COL) as $DATE_COL,
+			cast(strftime('%s', $DATE_COL) as int) as $SECONDS_COL,
 			case
 				when $FRIENDLY_NAME_COL is not null then $FRIENDLY_NAME_COL
 				else $DATA_TABLE.$SOURCE_COL
@@ -91,12 +103,51 @@ sub query {
 			end as $HUMIDITY_COL
 		from $DATA_TABLE
 			left join $METADATA_TABLE on $DATA_TABLE.$SOURCE_COL = $METADATA_TABLE.$SOURCE_COL
+		where 1 = 1
+			$additional_where
 	|;
-	$statement .= qq|
-		where $DATE_COL >= datetime('$start')
-	| if $start;
+
+	my $chunk_width = $self->_calc_chunk_width($additional_where);
+
+	$statement = qq|
+		select
+			$SECONDS_COL - ($SECONDS_COL % $chunk_width) as $ADJUSTED_COL,
+			strftime('%Y-%m-%dT%H:%M:%S', $SECONDS_COL, 'unixepoch') as $DATE_COL,
+			$SOURCE_COL,
+			avg($TEMP_COL) as $TEMP_COL,
+			avg($HUMIDITY_COL) as $HUMIDITY_COL
+		from ($statement)
+		group by
+			$ADJUSTED_COL,
+			$SOURCE_COL
+		order by $ADJUSTED_COL
+	|;
+
+	# say("data query: $statement");
 
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
+}
+
+sub _calc_chunk_width {
+	my ($self, $additional_where) = @_;
+
+	my $statement = qq|
+		select
+			max(($MAXDATE_COL - $MINDATE_COL) / $CHUNK_TARGET, 1)
+		from (
+			select
+				cast(strftime('%s', min($DATE_COL)) as int) as $MINDATE_COL,
+				cast(strftime('%s', max($DATE_COL)) as int) as $MAXDATE_COL
+			from data
+			where 1=1
+				$additional_where
+		)
+	|;
+
+	# say("chunk query: $statement");
+
+	my ($chunk_width) = $self->{dbh}->selectrow_array($statement);
+	return $chunk_width;
 }
 
 1;
