@@ -8,7 +8,6 @@
   function chartsReady() {
     var params = '';
     % if ($start) {
-      console.log('<%= $start %>');
       params = '?start=<%= $start %>';
     % } else {
       console.log('no $start param');
@@ -26,6 +25,13 @@
     var humidityData = new google.visualization.DataTable();
     humidityData.addColumn('datetime', 'Date');
 
+    populateData(data, tempData, humidityData);
+
+    drawChart('Temperature', 'temp_chart', tempData);
+    drawChart('Humidity', 'humidity_chart', humidityData);
+  }
+
+  function populateData(data, tempData, humidityData) {
     var knownSources = {};
     data.forEach(record => {
       if (record.temp == 'nan' || record.humidity == 'nan') {
@@ -57,22 +63,67 @@
       tempData.addRow(tempRow);
       humidityData.addRow(humidityRow);
     });
+  }
+
+  function drawChart(title, elementID, data) {
+
+    var columns = [];
+    var series = {};
+    for (var i = 0; i < data.getNumberOfColumns(); i++) {
+      columns.push(i);
+      if (i > 0) {
+        series[i - 1] = {};
+      }
+    }
 
     var options = {
+      title: title,
       interpolateNulls: true,
       legend: {
         position: 'top',
         alignment: 'center',
       },
       height: 350,
+      series: series,
     };
 
-    options.title = 'Temperature';
-    new google.visualization.LineChart(document.getElementById('temp_chart')).draw(tempData, options);
+    var chart = new google.visualization.LineChart(document.getElementById(elementID));
+    chart.draw(data, options);
 
-    options.title = 'Humidity';
-    new google.visualization.LineChart(document.getElementById('humidity_chart')).draw(humidityData, options);
+    google.visualization.events.addListener(chart, 'select', function () {
+      deSelectable(chart, data, columns, series, options);
+    });
   };
+
+  // based on http://jsfiddle.net/xDUPF/53/
+  function deSelectable(chart, data, columns, series, options) {
+    var sel = chart.getSelection();
+    if (sel.length > 0) {
+      if (sel[0].row === null) {  // clicked on the legend
+
+        var col = sel[0].column;
+        if (columns[col] == col) {  // hide
+          columns[col] = {
+            label: data.getColumnLabel(col),
+            type: data.getColumnType(col),
+            calc: function () {
+              return null;
+            }
+          };
+          series[col - 1].color = '#CCCCCC';
+
+        } else {  // show
+          columns[col] = col;
+          series[col - 1].color = null;
+        }
+
+        var view = new google.visualization.DataView(data);
+        view.setColumns(columns);
+        chart.draw(view, options);
+      }
+    }
+  }
+
 </script>
 
 <div id="last_picker">
