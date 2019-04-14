@@ -32,17 +32,18 @@
   }
 
   function populateData(data, tempData, humidityData) {
-    var knownSources = {};
+    var columnCount = 0;
+    var sourceColumns = {};
+    findSources(data).forEach(source => {
+      tempData.addColumn('number', source);
+      humidityData.addColumn('number', source);
+
+      sourceColumns[source] = ++columnCount;
+    });
+
     data.forEach(record => {
       if (record.temp == 'nan' || record.humidity == 'nan') {
         return;
-      }
-
-      if (!knownSources[record.source]) {
-        tempData.addColumn('number', record.source);
-        humidityData.addColumn('number', record.source);
-
-        knownSources[record.source] = tempData.getNumberOfColumns() - 1;
       }
 
       var tempRow = [];
@@ -52,7 +53,7 @@
           var date = new Date(record.datetime);
           tempRow.push(date);
           humidityRow.push(date);
-        } else if (i == knownSources[record.source]) {
+        } else if (i == sourceColumns[record.source]) {
           tempRow.push(record.temp);
           humidityRow.push(record.humidity);
         } else {
@@ -65,8 +66,21 @@
     });
   }
 
-  function drawChart(title, elementID, data) {
+  function findSources(data) {
+    var sourcesList = [];
+    var sourcesHash = {};
 
+    data.forEach(record => {
+      if (!sourcesHash[record.source]) {
+        sourcesHash[record.source] = record.source;
+        sourcesList.push(record.source);
+      }
+    });
+
+    return sourcesList.sort();
+  }
+
+  function drawChart(title, elementID, data) {
     var columns = [];
     var series = {};
     for (var i = 0; i < data.getNumberOfColumns(); i++) {
