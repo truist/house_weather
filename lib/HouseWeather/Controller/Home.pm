@@ -12,14 +12,15 @@ use DateTime::Duration;
 sub welcome {
 	my ($self) = @_;
 
-	$self->stash('start' => undef);
-	my $last = $self->param('last');
-	if ($last) {
-		my ($length, $units) = $last =~ /(\d+)(minutes?|hours?|days?|weeks?|months?|years?)/;
-		if ($units) {
-			$units .= 's' unless $units =~ /s$/;
-			$self->stash('start' => DateTime->now()->subtract(DateTime::Duration->new($units => $length)));
-		}
+	my $last = $self->param('last') || '1week';
+	my ($length, $units) = $last =~ /^(\d+)(minutes?|hours?|days?|weeks?|months?|years?)$/;
+	if ($units) {
+		$units .= 's' unless $units =~ /s$/;
+		$self->stash('body_class' => $units.$length);
+		$self->stash('start' => DateTime->now()->subtract(DateTime::Duration->new($units => $length)));
+	} else {
+		$self->stash('body_class' => 'unknown');
+		$self->stash('start' => undef);
 	}
 
 	$self->render();

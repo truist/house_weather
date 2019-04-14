@@ -25,3 +25,6 @@
 	padding: 1em;
 }
 
+body.years1000 #all_menu, body.months1 #months1_menu, body.weeks1 #weeks1_menu, body.days2 #days2_menu, body.days1 #days1_menu, body.hours12 #hours12_menu, body.hours2 #hours2_menu {
+	background-color: #8CF;
+}
