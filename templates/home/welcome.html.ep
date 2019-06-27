@@ -25,18 +25,23 @@
     var humidityData = new google.visualization.DataTable();
     humidityData.addColumn('datetime', 'Date');
 
-    populateData(data, tempData, humidityData);
+    var dewpointData = new google.visualization.DataTable();
+    dewpointData.addColumn('datetime', 'Date');
+
+    populateData(data, tempData, humidityData, dewpointData);
 
     drawChart('Temperature', 'temp_chart', tempData);
+    drawChart('Dew Point', 'dewpoint_chart', dewpointData);
     drawChart('Humidity', 'humidity_chart', humidityData);
   }
 
-  function populateData(data, tempData, humidityData) {
+  function populateData(data, tempData, humidityData, dewpointData) {
     var columnCount = 0;
     var sourceColumns = {};
     findSources(data).forEach(source => {
       tempData.addColumn('number', source);
       humidityData.addColumn('number', source);
+      dewpointData.addColumn('number', source);
 
       sourceColumns[source] = ++columnCount;
     });
@@ -48,21 +53,26 @@
 
       var tempRow = [];
       var humidityRow = [];
+      var dewpointRow = [];
       for (var i = 0; i < tempData.getNumberOfColumns(); i++) {
         if (i == 0) {
           var date = new Date(record.datetime);
           tempRow.push(date);
           humidityRow.push(date);
+          dewpointRow.push(date);
         } else if (i == sourceColumns[record.source]) {
           tempRow.push(record.temp);
           humidityRow.push(record.humidity);
+          dewpointRow.push(calcDewpoint(record.temp, record.humidity));
         } else {
           tempRow.push(null);
           humidityRow.push(null);
+          dewpointRow.push(null);
         }
       }
       tempData.addRow(tempRow);
       humidityData.addRow(humidityRow);
+      dewpointData.addRow(dewpointRow);
     });
   }
 
@@ -138,6 +148,14 @@
     }
   }
 
+  // derived from explanation at https://www.omnicalculator.com/physics/dew-point
+  function calcDewpoint(temp, humidity) {
+    var a = 17.62;
+    var b = 243.12;
+    var alpha = Math.log(humidity / 100) + a * temp / (b + temp);
+    return (b * alpha) / (a - alpha);
+  }
+
 </script>
 
 <div id="last_picker">
@@ -153,5 +171,6 @@
   </ul>
 </div>
 <div id="temp_chart"></div>
+<div id="dewpoint_chart"></div>
 <div id="humidity_chart"></div>
 
