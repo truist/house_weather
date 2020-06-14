@@ -12,7 +12,7 @@ use DateTime::Duration;
 sub welcome {
 	my ($self) = @_;
 
-	my $last = $self->param('last') || '1week';
+	my $last = $self->param('last') || '2days';
 	my ($length, $units) = $last =~ /^(\d+)(minutes?|hours?|days?|weeks?|months?|years?)$/;
 	if ($units) {
 		$units .= 's' unless $units =~ /s$/;
