@@ -28,20 +28,35 @@
     var dewpointData = new google.visualization.DataTable();
     dewpointData.addColumn('datetime', 'Date');
 
-    populateData(data, tempData, humidityData, dewpointData);
+    var co2Data = new google.visualization.DataTable();
+    co2Data.addColumn('datetime', 'Date');
+
+    var vocData = new google.visualization.DataTable();
+    vocData.addColumn('datetime', 'Date');
+
+    var pm25Data = new google.visualization.DataTable();
+    pm25Data.addColumn('datetime', 'Date');
+
+    populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data);
 
     drawChart('Temperature', 'temp_chart', tempData);
     drawChart('Dew Point', 'dewpoint_chart', dewpointData);
     drawChart('Humidity', 'humidity_chart', humidityData);
+    drawChart('CO2', 'co2_chart', co2Data);
+    drawChart('VOC', 'voc_chart', vocData);
+    drawChart('PM2.5', 'pm25_chart', pm25Data);
   }
 
-  function populateData(data, tempData, humidityData, dewpointData) {
+  function populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data) {
     var columnCount = 0;
     var sourceColumns = {};
     findSources(data).forEach(source => {
       tempData.addColumn('number', source);
       humidityData.addColumn('number', source);
       dewpointData.addColumn('number', source);
+      co2Data.addColumn('number', source);
+      vocData.addColumn('number', source);
+      pm25Data.addColumn('number', source);
 
       sourceColumns[source] = ++columnCount;
     });
@@ -54,25 +69,40 @@
       var tempRow = [];
       var humidityRow = [];
       var dewpointRow = [];
+      var co2Row = [];
+      var vocRow = [];
+      var pm25Row = [];
       for (var i = 0; i < tempData.getNumberOfColumns(); i++) {
         if (i == 0) {
           var date = new Date(record.datetime);
           tempRow.push(date);
           humidityRow.push(date);
           dewpointRow.push(date);
+		  co2Row.push(date);
+		  vocRow.push(date);
+		  pm25Row.push(date);
         } else if (i == sourceColumns[record.source]) {
           tempRow.push(record.temp);
           humidityRow.push(record.humidity);
           dewpointRow.push(calcDewpoint(record.temp, record.humidity));
+		  co2Row.push(record.co2);
+		  vocRow.push(record.voc);
+		  pm25Row.push(record.pm25);
         } else {
           tempRow.push(null);
           humidityRow.push(null);
           dewpointRow.push(null);
+          co2Row.push(null);
+          vocRow.push(null);
+          pm25Row.push(null);
         }
       }
       tempData.addRow(tempRow);
       humidityData.addRow(humidityRow);
       dewpointData.addRow(dewpointRow);
+      co2Data.addRow(co2Row);
+      vocData.addRow(vocRow);
+      pm25Data.addRow(pm25Row);
     });
   }
 
@@ -173,4 +203,7 @@
 <div id="temp_chart"></div>
 <div id="dewpoint_chart"></div>
 <div id="humidity_chart"></div>
+<div id="co2_chart"></div>
+<div id="voc_chart"></div>
+<div id="pm25_chart"></div>
 

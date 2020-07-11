@@ -15,6 +15,9 @@ my $DATE_COL = 'datetime';
 my $SOURCE_COL = 'source';
 my $TEMP_COL = 'temp';
 my $HUMIDITY_COL = 'humidity';
+my $CO2_COL = 'co2';
+my $VOC_COL = 'voc';
+my $PM25_COL = 'pm25';
 
 my $FRIENDLY_NAME_COL = 'friendly_name';
 my $TEMP_OFFSET_COL = 'temp_offset';
@@ -42,7 +45,10 @@ sub init {
 			$DATE_COL      text     not null,
 			$SOURCE_COL    text     not null,
 			$TEMP_COL      real     not null,
-			$HUMIDITY_COL  real     not null
+			$HUMIDITY_COL  real     not null,
+			$CO2_COL       real,
+			$VOC_COL       real,
+			$PM25_COL      real
 		)
 	|;
 	$dbh->do($statement);
@@ -78,6 +84,23 @@ sub add_record {
 	$self->{dbh}->do($statement, undef, $source, $temp, $humidity);
 }
 
+sub add_full_record {
+	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
+
+	my $statement = qq|
+		insert into $DATA_TABLE (
+			$DATE_COL,
+			$SOURCE_COL, $TEMP_COL, $HUMIDITY_COL,
+      $CO2_COL, $VOC_COL, $PM25_COL
+		) values (
+			datetime('now'),
+			?, ?, ?,
+			?, ?, ?
+		)
+	|;
+	$self->{dbh}->do($statement, undef, $source, $temp, $humidity, $co2, $voc, $pm25);
+}
+
 sub query {
 	my ($self, $start) = @_;
 
@@ -100,7 +123,10 @@ sub query {
 			case
 				when $HUMIDITY_OFFSET_COL is not null then $HUMIDITY_COL + $HUMIDITY_OFFSET_COL
 				else $HUMIDITY_COL
-			end as $HUMIDITY_COL
+			end as $HUMIDITY_COL,
+      $CO2_COL,
+      $VOC_COL,
+      $PM25_COL
 		from $DATA_TABLE
 			left join $METADATA_TABLE on $DATA_TABLE.$SOURCE_COL = $METADATA_TABLE.$SOURCE_COL
 		where 1 = 1
@@ -115,7 +141,10 @@ sub query {
 			strftime('%Y-%m-%dT%H:%M:%S', $SECONDS_COL, 'unixepoch') as $DATE_COL,
 			$SOURCE_COL,
 			avg($TEMP_COL) as $TEMP_COL,
-			avg($HUMIDITY_COL) as $HUMIDITY_COL
+			avg($HUMIDITY_COL) as $HUMIDITY_COL,
+			avg($CO2_COL) as $CO2_COL,
+			avg($VOC_COL) as $VOC_COL,
+			avg($PM25_COL) as $PM25_COL
 		from ($statement)
 		group by
 			$ADJUSTED_COL,
