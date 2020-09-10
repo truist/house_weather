@@ -12,7 +12,7 @@
     % } else {
       console.log('no $start param');
     % }
-    fetch('http://weather.rainskit.com/query' + params, { cache: 'no-store' })
+    fetch('/query' + params, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => drawCharts(data))
       .catch(error => console.error(error));
