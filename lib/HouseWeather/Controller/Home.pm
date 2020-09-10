@@ -76,7 +76,11 @@ sub query {
 sub _add_record_if_valid {
 	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
 
-	say("source: $source; temp: $temp; humidity: $humidity; co2: $co2; voc: $voc; pm25: $pm25");
+	if ($co2) {
+		say("source: $source; temp: $temp; humidity: $humidity; co2: $co2; voc: $voc; pm25: $pm25");
+	} else {
+		say("source: $source; temp: $temp; humidity: $humidity");
+	}
 	if ($temp > -30 && $temp < 50 && $humidity >= 0 && $humidity <= 100) {
     if ($co2 && $voc && $pm25) {
       $self->db->add_full_record($source, $temp, $humidity, $co2, $voc, $pm25);
