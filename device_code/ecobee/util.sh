@@ -14,7 +14,7 @@ fi
 
 API_LOG_FILE="./api.log"
 log() {
-	echo "$1" >> "$API_LOG_FILE"
+	true || echo "$1" >> "$API_LOG_FILE"
 }
 
 
