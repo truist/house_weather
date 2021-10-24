@@ -62,10 +62,6 @@
     });
 
     data.forEach(record => {
-      if (record.temp == 'nan' || record.humidity == 'nan') {
-        return;
-      }
-
       var tempRow = [];
       var humidityRow = [];
       var dewpointRow = [];
@@ -104,6 +100,22 @@
       vocData.addRow(vocRow);
       pm25Data.addRow(pm25Row);
     });
+
+	for (var columnIndex = tempData.getNumberOfColumns() - 1; columnIndex >= 0; columnIndex--) {
+		removeColumnIfEmpty(tempData, columnIndex)
+		removeColumnIfEmpty(humidityData, columnIndex)
+		removeColumnIfEmpty(dewpointData, columnIndex)
+		removeColumnIfEmpty(co2Data, columnIndex)
+		removeColumnIfEmpty(vocData, columnIndex)
+		removeColumnIfEmpty(pm25Data, columnIndex)
+	}
+  }
+
+  function removeColumnIfEmpty(chartData, columnIndex) {
+	  var range = chartData.getColumnRange(columnIndex);
+	  if (range.min == null && range.max == null) {
+		  chartData.removeColumn(columnIndex);
+	  }
   }
 
   function findSources(data) {
@@ -180,6 +192,9 @@
 
   // derived from explanation at https://www.omnicalculator.com/physics/dew-point
   function calcDewpoint(temp, humidity) {
+	if (!humidity) {
+		return null;
+	}
     var a = 17.62;
     var b = 243.12;
     var alpha = Math.log(humidity / 100) + a * temp / (b + temp);

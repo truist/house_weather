@@ -31,7 +31,8 @@ sub submit {
 
   my $source = $self->_get_required_param('source');
   my $temp = $self->_get_required_param('temperature');
-  my $humidity = $self->_get_required_param('humidity');
+
+  my $humidity = $self->param('humidity') || undef;
 
   my $co2 = $self->param('co2') || undef;
   my $voc = $self->param('voc') || undef;
@@ -78,14 +79,21 @@ sub _add_record_if_valid {
 
   if ($co2) {
     say("source: $source; temp: $temp; humidity: $humidity; co2: $co2; voc: $voc; pm25: $pm25");
-  } else {
+  } elsif ($humidity) {
     say("source: $source; temp: $temp; humidity: $humidity");
+  } else {
+    say("source: $source; temp: $temp");
   }
-  if ($temp > -30 && $temp < 50 && $humidity >= 0 && $humidity <= 100) {
-    if ($co2 && $voc && $pm25) {
-      $self->db->add_full_record($source, $temp, $humidity, $co2, $voc, $pm25);
+
+  if ($temp > -30 && $temp < 50) {
+    if ($humidity && $humidity >= 0 && $humidity <= 100) {
+      if ($co2 && $voc && $pm25) {
+        $self->db->add_full_record($source, $temp, $humidity, $co2, $voc, $pm25);
+      } else {
+        $self->db->add_record($source, $temp, $humidity);
+      }
     } else {
-      $self->db->add_record($source, $temp, $humidity);
+      $self->db->add_temperature($source, $temp)
     }
   }
 }

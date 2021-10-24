@@ -45,7 +45,7 @@ sub init {
 			$DATE_COL      text     not null,
 			$SOURCE_COL    text     not null,
 			$TEMP_COL      real     not null,
-			$HUMIDITY_COL  real     not null,
+			$HUMIDITY_COL  real,
 			$CO2_COL       real,
 			$VOC_COL       real,
 			$PM25_COL      real
@@ -58,7 +58,7 @@ sub init {
 			$SOURCE_COL           text     primary key not null,
 			$FRIENDLY_NAME_COL    text     not null,
 			$TEMP_OFFSET_COL      real     not null,
-			$HUMIDITY_OFFSET_COL  real     not null
+			$HUMIDITY_OFFSET_COL  real
 		)
 	|;
 	$dbh->do($statement);
@@ -67,6 +67,21 @@ sub init {
 	$self->{dbh} = $dbh;
 
 	return $self;
+}
+
+sub add_temperature {
+	my ($self, $source, $temp) = @_;
+
+	my $statement = qq|
+		insert into $DATA_TABLE (
+			$DATE_COL,
+			$SOURCE_COL, $TEMP_COL
+		) values (
+			datetime('now'),
+			?, ?
+		)
+	|;
+	$self->{dbh}->do($statement, undef, $source, $temp);
 }
 
 sub add_record {
