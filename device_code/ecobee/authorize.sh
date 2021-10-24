@@ -19,7 +19,7 @@ echo "...using this code: $PIN"
 echo
 read -n 1 -p "Return here and press a key when ready..."
 
-JSON="$(bootstrapApiRequest POST token "grant_type=ecobeePin&code=$AUTH_CODE")"
+JSON="$(bootstrapApiRequest 'POST' 'token' "grant_type=ecobeePin&code=$AUTH_CODE")"
 saveVar "$JSON" 'refresh_token' 'REFRESH_TOKEN' >/dev/null
 
 echo

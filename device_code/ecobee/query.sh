@@ -10,6 +10,6 @@ fi
 
 ACCESS_TOKEN="$(refreshToken)"
 
-apiRequest GET thermostat 'body=\{"selection":\{"selectionType":"registered","selectionMatch":"","includeRuntime":true\}\}'
+apiRequestJson 'thermostat' 'query.json' | jq '.thermostatList[].remoteSensors[] | { id, name, capability } | .capability[] |= { (.type): (.value) } | { id, name } + reduce .capability[] as $item ({}; . + $item)'
 
 
