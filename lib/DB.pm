@@ -63,6 +63,11 @@ sub init {
 	|;
 	$dbh->do($statement);
 
+	$statement = qq|
+		create index if not exists datetime_index on $DATA_TABLE ($DATE_COL)
+	|;
+	$dbh->do($statement);
+
 	my $self = bless({}, $package);
 	$self->{dbh} = $dbh;
 
@@ -167,6 +172,7 @@ sub query {
 		order by $ADJUSTED_COL
 	|;
 
+  # STDOUT->autoflush(1);
 	# say("data query: $statement");
 
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
