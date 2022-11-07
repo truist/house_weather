@@ -25,29 +25,28 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
 
-  Serial.print(F("Connecting to "));
-  Serial.print(WLAN_SSID);
+  Serial.printf("Connecting to %s\n", WLAN_SSID);
 
   // Run this once this way, with the real SSID and PASS, and they will be cached on the device.
-  //WiFi.begin(WLAN_SSID, WLAN_PASS);
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
   // From then on, run it this way, so you don't have to store the network password in source.
-  WiFi.begin();
+  //WiFi.begin();
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(F("."));
+    Serial.print(".");
   }
   Serial.println();
 
-  Serial.println(F("WiFi connected"));
-  Serial.print(F("IP address: "));
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 }
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED)
   {
-    Serial.println(F("Wifi not connected; resetting..."));
+    Serial.println("Wifi not connected; resetting...");
     ESP.restart();
   }
 
@@ -59,16 +58,25 @@ void loop() {
   delay(SENSOR_DOUBLE_READ_DELAY);
 
   humidity = dht.readHumidity();
-  Serial.print(F("Humidity: "));
-  Serial.println(humidity);
+  Serial.printf("Humidity: %f\n", humidity);
 
   temp = dht.readTemperature(); // pass 'true' to get Fahrenheit
-  Serial.print(F("Temperature: "));
-  Serial.println(temp);
+  Serial.printf("Temperature: %f\n", temp);
+
+  int chipId = ESP.getChipId();
+  Serial.printf("ChipId: %X\n", chipId);
+  char temp_str[20];
+  itoa(chipId, temp_str, 20);
+  Serial.printf("ChipID (base 20 - old implementation bug): %s\n", temp_str);
 
   Serial.println("HTTP begin...");
-  char *url = makeUrl(ESP.getChipId(), temp, humidity);
-  if (http.begin(url)) {
+
+  char url[255];
+  sprintf(url, "http://weather.rainskit.com/submit?source=%X&temperature=%.1f&humidity=%.1f", chipId, temp, humidity);
+  Serial.println(url);
+
+  WiFiClient client;
+  if (http.begin(client, url)) {
     int httpCode = http.GET();
     if (httpCode == HTTP_CODE_OK) {
       Serial.println(http.getString());
@@ -78,26 +86,8 @@ void loop() {
 
     http.end();
   } else {
-    Serial.printf("Unable to connect\n");
+    Serial.println("Unable to connect");
   }
 
   delay(REPORT_INTERVAL - SENSOR_DOUBLE_READ_DELAY);
-}
-
-char * makeUrl(int chipId, float temp, float humidity) {
-  char url[255] = "http://weather.rainskit.com/submit?source=";
-
-  char temp_str[10];
-  itoa(chipId, temp_str, 20);
-  strcat(url, temp_str);
-
-  strcat(url, "&temperature=");
-  dtostrf(temp, 4, 1, temp_str);
-  strcat(url, temp_str);
-
-  strcat(url, "&humidity=");
-  dtostrf(humidity, 4, 1, temp_str);
-  strcat(url, temp_str);
-
-  return url;
 }
