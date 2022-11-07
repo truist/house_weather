@@ -30,7 +30,8 @@ sub submit {
   my ($self) = @_;
 
   my $source = $self->_get_required_param('source');
-  my $temp = $self->_get_required_param('temperature');
+
+  my $temp = $self->param('temperature') || undef;
 
   my $humidity = $self->param('humidity') || undef;
 
@@ -38,7 +39,7 @@ sub submit {
   my $voc = $self->param('voc') || undef;
   my $pm25 = $self->param('pm25') || undef;
 
-  $self->_add_record_if_valid($source, $temp, $humidity, $co2, $voc, $pm25);
+  $self->_normalize_and_save($source, $temp, $humidity, $co2, $voc, $pm25);
 
   $self->render(text => 'OK');
 }
@@ -58,7 +59,7 @@ sub log_outside_weather {
     my $temp = sprintf("%.1f", $data->{temp} - 273.15);
     my $humidity = $data->{humidity};
 
-    $self->_add_record_if_valid($zip, $temp, $humidity);
+    $self->_normalize_and_save($zip, $temp, $humidity);
 
     $self->render(text => "Temp: $temp; humidity: $humidity");
   } else {
@@ -74,28 +75,20 @@ sub query {
   $self->render(json => $results);
 }
 
-sub _add_record_if_valid {
+sub _normalize_and_save {
   my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
 
-  if ($co2) {
-    say("source: $source; temp: $temp; humidity: $humidity; co2: $co2; voc: $voc; pm25: $pm25");
-  } elsif ($humidity) {
-    say("source: $source; temp: $temp; humidity: $humidity");
-  } else {
-    say("source: $source; temp: $temp");
+  no warnings 'uninitialized';
+  say("source: $source; temp: $temp; humidity: $humidity; co2: $co2; voc: $voc; pm25: $pm25;");
+
+  if ($temp < -30 || $temp > 50) {
+    $temp = undef;
+  }
+  if ($humidity < 0 || $humidity > 100) {
+    $humidity = undef;
   }
 
-  if ($temp > -30 && $temp < 50) {
-    if ($humidity && $humidity >= 0 && $humidity <= 100) {
-      if ($co2 && $voc && $pm25) {
-        $self->db->add_full_record($source, $temp, $humidity, $co2, $voc, $pm25);
-      } else {
-        $self->db->add_record($source, $temp, $humidity);
-      }
-    } else {
-      $self->db->add_temperature($source, $temp)
-    }
-  }
+  $self->db->add_air_record($source, $temp, $humidity, $co2, $voc, $pm25);
 }
 
 sub _get_required_param {

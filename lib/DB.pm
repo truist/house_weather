@@ -76,51 +76,23 @@ sub init {
 	return $self;
 }
 
-sub add_temperature {
-	my ($self, $source, $temp) = @_;
-
-	my $statement = qq|
-		insert into $DATA_TABLE (
-			$DATE_COL,
-			$SOURCE_COL, $TEMP_COL
-		) values (
-			datetime('now'),
-			?, ?
-		)
-	|;
-	$self->{dbh}->do($statement, undef, $source, $temp);
-}
-
-sub add_record {
-	my ($self, $source, $temp, $humidity) = @_;
-
-	my $statement = qq|
-		insert into $DATA_TABLE (
-			$DATE_COL,
-			$SOURCE_COL, $TEMP_COL, $HUMIDITY_COL
-		) values (
-			datetime('now'),
-			?, ?, ?
-		)
-	|;
-	$self->{dbh}->do($statement, undef, $source, $temp, $humidity);
-}
-
-sub add_full_record {
+sub add_air_record {
 	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
 
 	my $statement = qq|
 		insert into $DATA_TABLE (
-			$DATE_COL,
-			$SOURCE_COL, $TEMP_COL, $HUMIDITY_COL,
-      $CO2_COL, $VOC_COL, $PM25_COL
+			$DATE_COL, $SOURCE_COL,
+			$TEMP_COL, $HUMIDITY_COL,
+			$CO2_COL, $VOC_COL, $PM25_COL
 		) values (
-			datetime('now'),
-			?, ?, ?,
+			datetime('now'), ?,
+			?, ?,
 			?, ?, ?
 		)
 	|;
-	$self->{dbh}->do($statement, undef, $source, $temp, $humidity, $co2, $voc, $pm25);
+	$self->{dbh}->do($statement, undef, $source,
+					$temp, $humidity,
+					$co2, $voc, $pm25);
 }
 
 sub query {
