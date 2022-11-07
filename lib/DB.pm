@@ -46,7 +46,7 @@ sub init {
 			$ID_COL        integer  primary key not null,
 			$DATE_COL      text     not null,
 			$SOURCE_COL    text     not null,
-			$TEMP_COL      real     not null,
+			$TEMP_COL      real,
 			$HUMIDITY_COL  real,
 			$CO2_COL       real,
 			$VOC_COL       real,
