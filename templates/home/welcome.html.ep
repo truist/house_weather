@@ -207,6 +207,7 @@
   <ul>
     <li>Show only the last:</li>
     <li id="all_menu"><%= link_to 'All' => url_for()->query(last => "1000years") %></li>
+    <li id="years1_menu"><%= link_to '1 year' => url_for()->query(last => "1year") %></li>
     <li id="months1_menu"><%= link_to '1 month' => url_for()->query(last => "1month") %></li>
     <li id="weeks1_menu"><%= link_to '1 week' => url_for()->query(last => "1week") %></li>
     <li id="days2_menu"><%= link_to '48 hours' => url_for()->query(last => "2days") %></li>

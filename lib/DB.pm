@@ -26,12 +26,14 @@ my $HUMIDITY_OFFSET_COL = 'humidity_offset';
 my $SECONDS_COL = 'seconds';
 my $ADJUSTED_COL = 'adjusted';
 
-my $CHUNK_TARGET = 2500;
+my $CHUNK_TARGET = 1000;
 my $MINDATE_COL = 'mindate';
 my $MAXDATE_COL = 'maxdate';
 
 sub init {
 	my ($package, $config) = @_;
+
+	STDOUT->autoflush(1);
 
 	my $dbh = DBI->connect(
 		'DBI:SQLite:dbname=' . $config->{db_file},
@@ -172,7 +174,6 @@ sub query {
 		order by $ADJUSTED_COL
 	|;
 
-  # STDOUT->autoflush(1);
 	# say("data query: $statement");
 
 	return $self->{dbh}->selectall_arrayref($statement, { Slice => {} });
@@ -193,10 +194,11 @@ sub _calc_chunk_width {
 				$additional_where
 		)
 	|;
-
-	# say("chunk query: $statement");
+	say("chunk query: $statement");
 
 	my ($chunk_width) = $self->{dbh}->selectrow_array($statement);
+	say("chunk width: $chunk_width");
+
 	return $chunk_width;
 }
 
