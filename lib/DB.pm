@@ -19,6 +19,8 @@ my $CO2_COL = 'co2';
 my $VOC_COL = 'voc';
 my $PM25_COL = 'pm25';
 my $H2O_VOL_COL = 'h2o_vol';
+my $WATTS_COL = 'watts';
+my $VOLTS_COL = 'volts';
 
 my $FRIENDLY_NAME_COL = 'friendly_name';
 my $TEMP_OFFSET_COL = 'temp_offset';
@@ -52,7 +54,9 @@ sub init {
 			$CO2_COL       real,
 			$VOC_COL       real,
 			$PM25_COL      real,
-			$H2O_VOL_COL   real
+			$H2O_VOL_COL   real,
+			$WATTS_COL     real,
+			$VOLTS_COL     real
 		)
 	|;
 	$dbh->do($statement);
@@ -79,25 +83,28 @@ sub init {
 }
 
 sub add_record {
-	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25, $water_volume) = @_;
+	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25, $water_volume, $watts, $volts) = @_;
 
 	my $statement = qq|
 		insert into $DATA_TABLE (
 			$DATE_COL, $SOURCE_COL,
 			$TEMP_COL, $HUMIDITY_COL,
 			$CO2_COL, $VOC_COL, $PM25_COL,
-			$H2O_VOL_COL
+			$H2O_VOL_COL,
+			$WATTS_COL, $VOLTS_COL
 		) values (
 			datetime('now'), ?,
 			?, ?,
 			?, ?, ?,
-			?
+			?,
+			?, ?
 		)
 	|;
 	$self->{dbh}->do($statement, undef, $source,
 					$temp, $humidity,
 					$co2, $voc, $pm25,
-					$water_volume);
+					$water_volume,
+					$watts, $volts);
 }
 
 sub add_air_record {
@@ -110,6 +117,12 @@ sub add_water_record {
 	my ($self, $source, $volume) = @_;
 
 	$self->add_record($source, undef, undef, undef, undef, undef, $volume);
+}
+
+sub add_electricity_record {
+	my ($self, $source, $watts, $volts) = @_;
+
+	$self->add_record($source, undef, undef, undef, undef, undef, undef, $watts, $volts);
 }
 
 sub query {
@@ -138,7 +151,9 @@ sub query {
 			$CO2_COL,
 			$VOC_COL,
 			$PM25_COL,
-			$H2O_VOL_COL
+			$H2O_VOL_COL,
+			$WATTS_COL,
+			$VOLTS_COL
 		from $DATA_TABLE
 			left join $METADATA_TABLE on $DATA_TABLE.$SOURCE_COL = $METADATA_TABLE.$SOURCE_COL
 		where 1 = 1
@@ -157,7 +172,9 @@ sub query {
 			avg($CO2_COL) as $CO2_COL,
 			avg($VOC_COL) as $VOC_COL,
 			avg($PM25_COL) as $PM25_COL,
-			avg($H2O_VOL_COL) as $H2O_VOL_COL
+			avg($H2O_VOL_COL) as $H2O_VOL_COL,
+			avg($WATTS_COL) as $WATTS_COL,
+			avg($VOLTS_COL) as $VOLTS_COL
 		from ($statement)
 		group by
 			$ADJUSTED_COL,

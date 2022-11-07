@@ -50,8 +50,23 @@ sub water {
   my $source = $self->_get_required_param('source');
   my $volume = $self->param('volume') || 0;
 
-  say("source: $source; volume $volume;");
+  say("source: $source; volume: $volume;");
   $self->db->add_water_record($source, $volume);
+
+  $self->render(text => 'OK');
+}
+
+sub electricity {
+  my ($self) = @_;
+
+  my $source = $self->_get_required_param('source');
+  my $watts = $self->_get_required_param('watts');
+
+  my $volts = $self->param('volts') || undef;
+
+  no warnings 'uninitialized';
+  say("source: $source; watts: $watts; volts: $volts;");
+  $self->db->add_electricity_record($source, $watts, $volts);
 
   $self->render(text => 'OK');
 }
