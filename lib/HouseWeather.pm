@@ -15,6 +15,7 @@ sub startup {
 	my $router = $self->routes;
 	$router->get('/')->to('home#welcome');
 	$router->any(['GET', 'POST'] => '/submit')->to('home#submit');
+	$router->any(['GET', 'POST'] => '/water')->to('home#water');
 	$router->get('/query')->to('home#query');
 	$router->get('/outside')->to('home#log_outside_weather');
 }

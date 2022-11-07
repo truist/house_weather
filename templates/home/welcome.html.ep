@@ -37,7 +37,10 @@
     var pm25Data = new google.visualization.DataTable();
     pm25Data.addColumn('datetime', 'Date');
 
-    populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data);
+    var waterData = new google.visualization.DataTable();
+    waterData.addColumn('datetime', 'Date');
+
+    populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data, waterData);
 
     drawChart('Temperature', 'temp_chart', tempData);
     drawChart('Dew Point', 'dewpoint_chart', dewpointData);
@@ -45,9 +48,11 @@
     drawChart('CO2', 'co2_chart', co2Data);
     drawChart('VOC', 'voc_chart', vocData);
     drawChart('PM2.5', 'pm25_chart', pm25Data);
+    drawChart('Water volume', 'water_volume_chart', waterData);
   }
 
-  function populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data) {
+  function populateData(data, tempData, humidityData, dewpointData, co2Data, vocData, pm25Data, waterData) {
+    // console.log(data);
     var columnCount = 0;
     var sourceColumns = {};
     findSources(data).forEach(source => {
@@ -57,6 +62,7 @@
       co2Data.addColumn('number', source);
       vocData.addColumn('number', source);
       pm25Data.addColumn('number', source);
+      waterData.addColumn('number', source);
 
       sourceColumns[source] = ++columnCount;
     });
@@ -68,6 +74,7 @@
       var co2Row = [];
       var vocRow = [];
       var pm25Row = [];
+      var waterRow = [];
       for (var i = 0; i < tempData.getNumberOfColumns(); i++) {
         if (i == 0) {
           var date = new Date(record.datetime);
@@ -77,6 +84,7 @@
 		  co2Row.push(date);
 		  vocRow.push(date);
 		  pm25Row.push(date);
+		  waterRow.push(date);
         } else if (i == sourceColumns[record.source]) {
           tempRow.push(record.temp);
           humidityRow.push(record.humidity);
@@ -84,6 +92,7 @@
 		  co2Row.push(record.co2);
 		  vocRow.push(record.voc);
 		  pm25Row.push(record.pm25);
+		  waterRow.push(record.h2o_vol);
         } else {
           tempRow.push(null);
           humidityRow.push(null);
@@ -91,6 +100,7 @@
           co2Row.push(null);
           vocRow.push(null);
           pm25Row.push(null);
+          waterRow.push(null);
         }
       }
       tempData.addRow(tempRow);
@@ -99,6 +109,7 @@
       co2Data.addRow(co2Row);
       vocData.addRow(vocRow);
       pm25Data.addRow(pm25Row);
+      waterData.addRow(waterRow);
     });
 
 	for (var columnIndex = tempData.getNumberOfColumns() - 1; columnIndex >= 0; columnIndex--) {
@@ -108,6 +119,7 @@
 		removeColumnIfEmpty(co2Data, columnIndex)
 		removeColumnIfEmpty(vocData, columnIndex)
 		removeColumnIfEmpty(pm25Data, columnIndex)
+		removeColumnIfEmpty(waterData, columnIndex)
 	}
   }
 
@@ -222,4 +234,5 @@
 <div id="co2_chart"></div>
 <div id="voc_chart"></div>
 <div id="pm25_chart"></div>
+<div id="water_volume_chart"></div>
 

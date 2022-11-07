@@ -39,7 +39,19 @@ sub submit {
   my $voc = $self->param('voc') || undef;
   my $pm25 = $self->param('pm25') || undef;
 
-  $self->_normalize_and_save($source, $temp, $humidity, $co2, $voc, $pm25);
+  $self->_normalize_and_save_air($source, $temp, $humidity, $co2, $voc, $pm25);
+
+  $self->render(text => 'OK');
+}
+
+sub water {
+  my ($self) = @_;
+
+  my $source = $self->_get_required_param('source');
+  my $volume = $self->param('volume') || 0;
+
+  say("source: $source; volume $volume;");
+  $self->db->add_water_record($source, $volume);
 
   $self->render(text => 'OK');
 }
@@ -59,7 +71,7 @@ sub log_outside_weather {
     my $temp = sprintf("%.1f", $data->{temp} - 273.15);
     my $humidity = $data->{humidity};
 
-    $self->_normalize_and_save($zip, $temp, $humidity);
+    $self->_normalize_and_save_air($zip, $temp, $humidity);
 
     $self->render(text => "Temp: $temp; humidity: $humidity");
   } else {
@@ -75,7 +87,7 @@ sub query {
   $self->render(json => $results);
 }
 
-sub _normalize_and_save {
+sub _normalize_and_save_air {
   my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
 
   no warnings 'uninitialized';

@@ -18,6 +18,7 @@ my $HUMIDITY_COL = 'humidity';
 my $CO2_COL = 'co2';
 my $VOC_COL = 'voc';
 my $PM25_COL = 'pm25';
+my $H2O_VOL_COL = 'h2o_vol';
 
 my $FRIENDLY_NAME_COL = 'friendly_name';
 my $TEMP_OFFSET_COL = 'temp_offset';
@@ -50,7 +51,8 @@ sub init {
 			$HUMIDITY_COL  real,
 			$CO2_COL       real,
 			$VOC_COL       real,
-			$PM25_COL      real
+			$PM25_COL      real,
+			$H2O_VOL_COL   real
 		)
 	|;
 	$dbh->do($statement);
@@ -76,23 +78,38 @@ sub init {
 	return $self;
 }
 
-sub add_air_record {
-	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
+sub add_record {
+	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25, $water_volume) = @_;
 
 	my $statement = qq|
 		insert into $DATA_TABLE (
 			$DATE_COL, $SOURCE_COL,
 			$TEMP_COL, $HUMIDITY_COL,
-			$CO2_COL, $VOC_COL, $PM25_COL
+			$CO2_COL, $VOC_COL, $PM25_COL,
+			$H2O_VOL_COL
 		) values (
 			datetime('now'), ?,
 			?, ?,
-			?, ?, ?
+			?, ?, ?,
+			?
 		)
 	|;
 	$self->{dbh}->do($statement, undef, $source,
 					$temp, $humidity,
-					$co2, $voc, $pm25);
+					$co2, $voc, $pm25,
+					$water_volume);
+}
+
+sub add_air_record {
+	my ($self, $source, $temp, $humidity, $co2, $voc, $pm25) = @_;
+
+	$self->add_record($source, $temp, $humidity, $co2, $voc, $pm25);
+}
+
+sub add_water_record {
+	my ($self, $source, $volume) = @_;
+
+	$self->add_record($source, undef, undef, undef, undef, undef, $volume);
 }
 
 sub query {
@@ -118,9 +135,10 @@ sub query {
 				when $HUMIDITY_OFFSET_COL is not null then $HUMIDITY_COL + $HUMIDITY_OFFSET_COL
 				else $HUMIDITY_COL
 			end as $HUMIDITY_COL,
-      $CO2_COL,
-      $VOC_COL,
-      $PM25_COL
+			$CO2_COL,
+			$VOC_COL,
+			$PM25_COL,
+			$H2O_VOL_COL
 		from $DATA_TABLE
 			left join $METADATA_TABLE on $DATA_TABLE.$SOURCE_COL = $METADATA_TABLE.$SOURCE_COL
 		where 1 = 1
@@ -138,7 +156,8 @@ sub query {
 			avg($HUMIDITY_COL) as $HUMIDITY_COL,
 			avg($CO2_COL) as $CO2_COL,
 			avg($VOC_COL) as $VOC_COL,
-			avg($PM25_COL) as $PM25_COL
+			avg($PM25_COL) as $PM25_COL,
+			avg($H2O_VOL_COL) as $H2O_VOL_COL
 		from ($statement)
 		group by
 			$ADJUSTED_COL,
