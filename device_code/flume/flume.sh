@@ -11,7 +11,7 @@ if [ -z "$BEARER_TOKEN" ]; then
 fi
 
 QUERY_DATA_PREFIX='{ "queries": [ {"request_id": "request_1", "bucket": "MIN", "since_datetime": "'
-SINCE="$(date -v -3M "+%Y-%m-%d %H:%M:%S")"
+SINCE="$(date -d '-3 minutes' '+%Y-%m-%d %H:%M:%S')"
 QUERY_DATA_SUFFIX='", "operation": "SUM", "units": "GALLONS"}]}'
 
 QUERY_DATA="${QUERY_DATA_PREFIX}${SINCE}${QUERY_DATA_SUFFIX}"
