@@ -23,6 +23,8 @@ DATA="$(curl -s \
   --header "Authorization: Bearer $BEARER_TOKEN" \
   --data "$QUERY_DATA")"
 
+echo "$DATA"
+
 VOLUME="$(echo "$DATA" | jq '.data[0].request_1[0].value')"
 
 REQ_URL="http://weather.rainskit.com/water?source=flume&volume=$VOLUME"
